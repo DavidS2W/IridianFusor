@@ -217,7 +217,9 @@ async def gemini_response(text, channel, edits):
     response = model.generate_content(text, stream=False)
     await msg.edit(content=response.text)
   else:
-    response = model.generate_content(text, stream=False)
+    prev_msgs = [message.content async for message in channel.history(limit=3)]
+    chat = model.start_chat(history=[ {"role": "user", "parts": prev_msgs[1]}, {"role": "model", "parts": prev_msgs[2]}])
+    response = chat.send_message(text, stream=False)
     await channel.send(response.text)
 
 
@@ -233,7 +235,7 @@ async def kestral(message):
     if a["channel_id"] != message.channel.id:
       return
     try:
-      await gemini_response(f'Pretend to be a teenage girl. Speak concisely, answering this prompt : {text}', message.channel, "no")
+      await gemini_response(f'Pretend to be a cute teenage girl. Speak concisely, answering this prompt : {text}', message.channel, "no")
     except:
       return(random.choice(fail_words))
       
